@@ -2,6 +2,7 @@
 # using sqlite so i dont have to run a server
 
 import sqlite3
+import datetime
 
 DB_PATH = "data/infobots.db"
 
@@ -23,6 +24,13 @@ def init_db():
         in_stock INTEGER,
         first_seen TEXT,
         last_seen TEXT
+    )""")
+    c.execute("""CREATE TABLE IF NOT EXISTS alerts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        url TEXT,
+        type TEXT,
+        message TEXT,
+        time TEXT
     )""")
     conn.commit()
     conn.close()
@@ -46,5 +54,15 @@ def save_product(p):
         VALUES (?, ?, ?, ?, ?, ?, ?)""",
         (p["url"], p["name"], p["store"], p["price"], p["in_stock"],
          p["first_seen"], p["last_seen"]))
+    conn.commit()
+    conn.close()
+
+
+def log_alert(url, atype, message):
+    conn = get_conn()
+    c = conn.cursor()
+    t = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    c.execute("INSERT INTO alerts (url, type, message, time) VALUES (?, ?, ?, ?)",
+              (url, atype, message, t))
     conn.commit()
     conn.close()
