@@ -21,6 +21,11 @@ def check(products):
             p["first_seen"] = now()
         else:
             p["first_seen"] = old["first_seen"]
+            # was sold out last time, now its in stock again
+            if old["in_stock"] == 0 and p["in_stock"] == 1:
+                msg = "Restock: {} is back in stock - {}".format(p["name"], p["price"])
+                alerts.append({"url": p["url"], "type": "restock", "message": msg})
+                database.log_alert(p["url"], "restock", msg)
         p["last_seen"] = now()
         database.save_product(p)
     return alerts
