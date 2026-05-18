@@ -26,6 +26,12 @@ def check(products):
                 msg = "Restock: {} is back in stock - {}".format(p["name"], p["price"])
                 alerts.append({"url": p["url"], "type": "restock", "message": msg})
                 database.log_alert(p["url"], "restock", msg)
+            # price went down
+            if p["price"] < old["price"]:
+                msg = "Price drop: {} is now {} (was {})".format(
+                    p["name"], p["price"], old["price"])
+                alerts.append({"url": p["url"], "type": "price", "message": msg})
+                database.log_alert(p["url"], "price", msg)
         p["last_seen"] = now()
         database.save_product(p)
     return alerts
