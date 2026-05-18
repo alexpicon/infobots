@@ -30,6 +30,43 @@ def storefront():
     return "<html>\n<body>\n<h1>Demo Sneaker Store</h1>\n" + rows + "\n</body>\n</html>"
 
 
+# little routes so i can change the store while the bot is running
+# (restock stuff, change prices) without restarting the server
+
+def find_product(slug):
+    for p in STORE:
+        if p["slug"] == slug:
+            return p
+    return None
+
+
+@app.route("/admin/restock/<slug>")
+def admin_restock(slug):
+    p = find_product(slug)
+    if p is None:
+        return "no product called " + slug
+    p["stock"] = True
+    return slug + " is back in stock"
+
+
+@app.route("/admin/soldout/<slug>")
+def admin_soldout(slug):
+    p = find_product(slug)
+    if p is None:
+        return "no product called " + slug
+    p["stock"] = False
+    return slug + " is now sold out"
+
+
+@app.route("/admin/price/<slug>/<int:price>")
+def admin_price(slug, price):
+    p = find_product(slug)
+    if p is None:
+        return "no product called " + slug
+    p["price"] = "$" + str(price)
+    return slug + " price is now $" + str(price)
+
+
 if __name__ == "__main__":
     print("mock store running on http://127.0.0.1:5000")
     app.run(port=5000)
