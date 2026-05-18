@@ -1,8 +1,14 @@
-# gets product info off a store page
-# only knows my mock store layout right now, can add real stores later
+# fetches store pages and hands them to the right parser.
+# each retailer lays out its pages differently so they each get their
+# own parser in the parsers/ folder.
 
 import requests
-from bs4 import BeautifulSoup
+from parsers import nike
+
+# which parser to use for each store
+PARSERS = {
+    "nike": nike.parse,
+}
 
 
 def fetch(url):
@@ -11,23 +17,11 @@ def fetch(url):
     return r.text
 
 
-def parse_products(html, store):
-    soup = BeautifulSoup(html, "html.parser")
-    products = []
-    for div in soup.find_all("div", class_="product"):
-        name = div.find("span", class_="name").text.strip()
-        price = div.find("span", class_="price").text.strip()
-        stock = div.find("span", class_="stock").text.strip().lower()
-        products.append({
-            "url": div.get("data-url"),
-            "name": name,
-            "store": store,
-            "price": price,
-            "in_stock": 1 if stock == "in stock" else 0,
-        })
+def scrape(target):
+    text = fetch(target["url"])
+    parse = PARSERS[target["parser"]]
+    products = parse(text)
+    # the parser doesn't know the store name so add it on here
+    for p in products:
+        p["store"] = target["store"]
     return products
-
-
-def scrape(url, store):
-    html = fetch(url)
-    return parse_products(html, store)

@@ -9,10 +9,10 @@ import checker
 import database
 import discord_alert
 
-# stores to watch (pointing at the mock store for now)
+# stores to watch. each one has a parser (see the parsers/ folder).
 # note: use 127.0.0.1 not localhost, localhost was giving me empty pages
 TARGETS = [
-    {"url": "http://127.0.0.1:5000/", "store": "Demo Sneaker Store"},
+    {"store": "Nike", "url": "http://127.0.0.1:5000/nike", "parser": "nike"},
 ]
 
 # product names with these words in them get a keyword alert
@@ -25,7 +25,7 @@ CHECK_EVERY = 60
 def run_once(dry_run=False):
     for t in TARGETS:
         print("checking", t["store"], "...")
-        products = scraper.scrape(t["url"], t["store"])
+        products = scraper.scrape(t)
         alerts = checker.check(products, KEYWORDS)
         if alerts:
             for a in alerts:

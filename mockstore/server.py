@@ -1,70 +1,97 @@
-# fake store to test the bot against
-# i made this because real sites block bots and its against their rules
-# the products live in memory so they reset when you restart the server
+# fake stores to test the bot against
+# i made this because real sites block bots and its against their rules.
+# theres 3 "stores" here and each one renders its page differently, so the
+# bot needs a different parser for each one - same as the real retailers did.
 
-from flask import Flask
+from flask import Flask, jsonify
 
 app = Flask(__name__)
 
-STORE = [
-    {"slug": "yeezy-350-zebra", "name": "Yeezy Boost 350 V2 Zebra", "price": "$220", "stock": True},
-    {"slug": "jordan-1-bred-toe", "name": "Air Jordan 1 Bred Toe", "price": "$160", "stock": True},
-    {"slug": "dunk-low-panda", "name": "Nike Dunk Low Panda", "price": "$110", "stock": False},
-    {"slug": "new-balance-550", "name": "New Balance 550 White Green", "price": "$120", "stock": True},
-    {"slug": "yeezy-700-wave", "name": "Yeezy Boost 700 Wave Runner", "price": "$300", "stock": False},
-]
-
-
-def product_html(p):
-    stock = "in stock" if p["stock"] else "sold out"
-    return '''  <div class="product" data-url="/product/{slug}">
-    <span class="name">{name}</span>
-    <span class="price">{price}</span>
-    <span class="stock">{stock}</span>
-  </div>'''.format(slug=p["slug"], name=p["name"], price=p["price"], stock=stock)
+# the products are all stored the same way internally. each store route
+# renders them in that retailers layout. resets when you restart the server.
+STORES = {
+    "nike": [
+        {"id": "air-max-90-infrared", "name": "Nike Air Max 90 Infrared", "price": 130, "stock": True},
+        {"id": "air-force-1-low", "name": "Nike Air Force 1 Low White", "price": 110, "stock": True},
+        {"id": "dunk-low-panda", "name": "Nike Dunk Low Panda", "price": 115, "stock": False},
+        {"id": "jordan-1-chicago", "name": "Air Jordan 1 High Chicago", "price": 180, "stock": False},
+    ],
+    "footlocker": [
+        {"id": "nb-550-white-green", "name": "New Balance 550 White Green", "price": 120, "stock": True},
+        {"id": "jordan-4-black-cat", "name": "Jordan 4 Retro Black Cat", "price": 210, "stock": False},
+        {"id": "samba-og", "name": "adidas Samba OG", "price": 100, "stock": True},
+    ],
+    "solefly": [
+        {"id": "yeezy-350-zebra", "name": "Yeezy Boost 350 V2 Zebra", "price": 220, "stock": True},
+        {"id": "travis-jordan-1-low", "name": "Travis Scott Air Jordan 1 Low", "price": 1500, "stock": False},
+        {"id": "dunk-chunky-dunky", "name": "Nike Dunk Low Chunky Dunky", "price": 850, "stock": True},
+    ],
+}
 
 
 @app.route("/")
-def storefront():
-    rows = "\n".join(product_html(p) for p in STORE)
-    return "<html>\n<body>\n<h1>Demo Sneaker Store</h1>\n" + rows + "\n</body>\n</html>"
+def index():
+    return """<html><body>
+<h1>Mock Stores</h1>
+<p>fake stores for testing infobots:</p>
+<ul>
+  <li><a href="/nike">/nike</a> - nike style product grid</li>
+  <li><a href="/footlocker">/footlocker</a> - foot locker style list</li>
+  <li><a href="/solefly/products.json">/solefly/products.json</a> - shopify style json</li>
+</ul>
+</body></html>"""
 
 
-# little routes so i can change the store while the bot is running
-# (restock stuff, change prices) without restarting the server
+# --- Nike: a grid of product cards ---
 
-def find_product(slug):
-    for p in STORE:
-        if p["slug"] == slug:
+@app.route("/nike")
+def nike_page():
+    cards = ""
+    for p in STORES["nike"]:
+        avail = "Available" if p["stock"] else "Sold Out"
+        cards += '''
+  <div class="product-card" data-pdp-url="/t/{id}">
+    <div class="product-card__title">{name}</div>
+    <div class="product-price">${price}</div>
+    <div class="product-card__availability">{avail}</div>
+  </div>'''.format(id=p["id"], name=p["name"], price=p["price"], avail=avail)
+    return '<html><body>\n<div class="product-grid">' + cards + "\n</div>\n</body></html>"
+
+
+# --- admin routes so i can change the stores while the bot is running ---
+
+def find_product(store, pid):
+    for p in STORES.get(store, []):
+        if p["id"] == pid:
             return p
     return None
 
 
-@app.route("/admin/restock/<slug>")
-def admin_restock(slug):
-    p = find_product(slug)
+@app.route("/admin/<store>/restock/<pid>")
+def admin_restock(store, pid):
+    p = find_product(store, pid)
     if p is None:
-        return "no product called " + slug
+        return "no product " + pid + " in " + store
     p["stock"] = True
-    return slug + " is back in stock"
+    return pid + " is back in stock at " + store
 
 
-@app.route("/admin/soldout/<slug>")
-def admin_soldout(slug):
-    p = find_product(slug)
+@app.route("/admin/<store>/soldout/<pid>")
+def admin_soldout(store, pid):
+    p = find_product(store, pid)
     if p is None:
-        return "no product called " + slug
+        return "no product " + pid + " in " + store
     p["stock"] = False
-    return slug + " is now sold out"
+    return pid + " is sold out at " + store
 
 
-@app.route("/admin/price/<slug>/<int:price>")
-def admin_price(slug, price):
-    p = find_product(slug)
+@app.route("/admin/<store>/price/<pid>/<int:price>")
+def admin_price(store, pid, price):
+    p = find_product(store, pid)
     if p is None:
-        return "no product called " + slug
-    p["price"] = "$" + str(price)
-    return slug + " price is now $" + str(price)
+        return "no product " + pid + " in " + store
+    p["price"] = price
+    return pid + " price at " + store + " is now $" + str(price)
 
 
 if __name__ == "__main__":
