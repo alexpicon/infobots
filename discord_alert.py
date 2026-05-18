@@ -16,7 +16,10 @@ def get_webhook_url():
     return cfg.get("webhook_url")
 
 
-def send(message):
+def send(message, dry_run=False):
+    if dry_run:
+        print("  [dry run] would send to discord:", message)
+        return
     url = get_webhook_url()
     if not url:
         print("  (no webhook in config.json, not sending to discord)")
