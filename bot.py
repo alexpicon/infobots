@@ -14,6 +14,7 @@ import discord_alert
 TARGETS = [
     {"store": "Nike", "url": "http://127.0.0.1:5000/nike", "parser": "nike"},
     {"store": "Foot Locker", "url": "http://127.0.0.1:5000/footlocker", "parser": "footlocker"},
+    {"store": "Solefly", "url": "http://127.0.0.1:5000/solefly/products.json", "parser": "shopify"},
 ]
 
 # product names with these words in them get a keyword alert

@@ -74,6 +74,22 @@ def footlocker_page():
     return '<html><body>\n<ul class="product-list">' + items + "\n</ul>\n</body></html>"
 
 
+# --- Solefly: a shopify store. shopify sites expose products.json ---
+
+@app.route("/solefly/products.json")
+def solefly_json():
+    products = []
+    for p in STORES["solefly"]:
+        products.append({
+            "handle": p["id"],
+            "title": p["name"],
+            "variants": [
+                {"price": "{}.00".format(p["price"]), "available": p["stock"]},
+            ],
+        })
+    return jsonify({"products": products})
+
+
 # --- admin routes so i can change the stores while the bot is running ---
 
 def find_product(store, pid):
