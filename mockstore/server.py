@@ -1,7 +1,8 @@
-# fake stores to test the bot against
-# i made this because real sites block bots and its against their rules.
-# theres 3 "stores" here and each one renders its page differently, so the
-# bot needs a different parser for each one - same as the real retailers did.
+# fake stores to test the bot against.
+# for this archive the bot runs against these instead of real retailer sites,
+# so the whole thing is self-contained and anyone can run it.
+# each store renders its page differently so the bot needs its own parser
+# for each one, same as the real retailers did.
 
 from flask import Flask, jsonify
 
