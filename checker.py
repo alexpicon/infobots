@@ -9,6 +9,17 @@ def now():
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
 
+def price_to_number(price):
+    # prices come in as text like "$220" so comparing them as strings was wrong
+    # ("$90" < "$120" is False because it compares letter by letter)
+    # this strips it down to an actual number
+    p = price.replace("$", "").replace(",", "").strip()
+    try:
+        return float(p)
+    except ValueError:
+        return 0.0
+
+
 def check(products):
     alerts = []
     for p in products:
@@ -27,7 +38,7 @@ def check(products):
                 alerts.append({"url": p["url"], "type": "restock", "message": msg})
                 database.log_alert(p["url"], "restock", msg)
             # price went down
-            if p["price"] < old["price"]:
+            if price_to_number(p["price"]) < price_to_number(old["price"]):
                 msg = "Price drop: {} is now {} (was {})".format(
                     p["name"], p["price"], old["price"])
                 alerts.append({"url": p["url"], "type": "price", "message": msg})
