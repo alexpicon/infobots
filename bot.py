@@ -27,7 +27,13 @@ CHECK_EVERY = 60
 def run_once(dry_run=False):
     for t in TARGETS:
         print("checking", t["store"], "...")
-        products = scraper.scrape(t)
+        try:
+            products = scraper.scrape(t)
+        except Exception as e:
+            # one store being down or changing its layout shouldn't stop
+            # the rest from getting checked (matters most in watch mode)
+            print("  couldn't check {}: {}".format(t["store"], e))
+            continue
         alerts = checker.check(products, KEYWORDS)
         if alerts:
             for a in alerts:

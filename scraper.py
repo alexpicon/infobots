@@ -16,12 +16,19 @@ PARSERS = {
 def fetch(url):
     headers = {"User-Agent": "InfoBots"}
     r = requests.get(url, headers=headers, timeout=10)
+    # without this a 404/500 page gets handed to the parser as if it
+    # were a real product page
+    r.raise_for_status()
     return r.text
 
 
 def scrape(target):
+    parser_name = target["parser"]
+    if parser_name not in PARSERS:
+        raise ValueError("no parser called '{}' (store: {})".format(
+            parser_name, target["store"]))
     text = fetch(target["url"])
-    parse = PARSERS[target["parser"]]
+    parse = PARSERS[parser_name]
     products = parse(text)
     # the parser doesn't know the store name so add it on here
     for p in products:
