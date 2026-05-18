@@ -7,8 +7,9 @@ import checker
 import database
 
 # stores to watch (pointing at the mock store for now)
+# note: use 127.0.0.1 not localhost, localhost was giving me empty pages
 TARGETS = [
-    {"url": "http://localhost:5000/", "store": "Demo Sneaker Store"},
+    {"url": "http://127.0.0.1:5000/", "store": "Demo Sneaker Store"},
 ]
 
 

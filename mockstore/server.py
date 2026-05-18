@@ -31,5 +31,5 @@ def storefront():
 
 
 if __name__ == "__main__":
-    print("mock store running on http://localhost:5000")
+    print("mock store running on http://127.0.0.1:5000")
     app.run(port=5000)
