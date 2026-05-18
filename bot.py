@@ -12,12 +12,15 @@ TARGETS = [
     {"url": "http://127.0.0.1:5000/", "store": "Demo Sneaker Store"},
 ]
 
+# product names with these words in them get a keyword alert
+KEYWORDS = ["yeezy", "jordan 1", "panda"]
+
 
 def run_once():
     for t in TARGETS:
         print("checking", t["store"], "...")
         products = scraper.scrape(t["url"], t["store"])
-        alerts = checker.check(products)
+        alerts = checker.check(products, KEYWORDS)
         if alerts:
             for a in alerts:
                 print("  ALERT:", a["message"])

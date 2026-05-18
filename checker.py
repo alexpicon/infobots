@@ -20,7 +20,7 @@ def price_to_number(price):
         return 0.0
 
 
-def check(products):
+def check(products, keywords):
     alerts = []
     for p in products:
         old = database.get_product(p["url"])
@@ -43,6 +43,13 @@ def check(products):
                     p["name"], p["price"], old["price"])
                 alerts.append({"url": p["url"], "type": "price", "message": msg})
                 database.log_alert(p["url"], "price", msg)
+        # see if the name matches any of my watch keywords
+        name_lower = p["name"].lower()
+        for kw in keywords:
+            if kw.lower() in name_lower:
+                msg = "Keyword match ({}): {} - {}".format(kw, p["name"], p["price"])
+                alerts.append({"url": p["url"], "type": "keyword", "message": msg})
+                database.log_alert(p["url"], "keyword", msg)
         p["last_seen"] = now()
         database.save_product(p)
     return alerts
