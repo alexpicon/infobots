@@ -5,6 +5,7 @@ import argparse
 import scraper
 import checker
 import database
+import discord_alert
 
 # stores to watch (pointing at the mock store for now)
 # note: use 127.0.0.1 not localhost, localhost was giving me empty pages
@@ -24,6 +25,7 @@ def run_once():
         if alerts:
             for a in alerts:
                 print("  ALERT:", a["message"])
+                discord_alert.send(a["message"])
         else:
             print("  nothing new")
 
