@@ -2,6 +2,7 @@
 # run "python bot.py --init" once, then "python bot.py --once" to check the stores
 
 import argparse
+import json
 import time
 import scraper
 import checker
@@ -34,6 +35,25 @@ def run_once(dry_run=False):
             print("  nothing new")
 
 
+def export_drops():
+    # dumps the alerts to a json file so my sneakerbro app can show them
+    # as a drop feed instead of me copying stuff over by hand
+    alerts = database.get_alerts()
+    drops = []
+    for a in alerts:
+        product = database.get_product(a["url"])
+        drops.append({
+            "type": a["type"],
+            "name": product["name"] if product else "",
+            "store": product["store"] if product else "",
+            "price": product["price"] if product else "",
+            "time": a["time"],
+        })
+    with open("drops.json", "w") as f:
+        json.dump(drops, f, indent=2)
+    print("wrote", len(drops), "drops to drops.json")
+
+
 def watch(dry_run=False):
     print("watch mode - checking every", CHECK_EVERY, "seconds (ctrl+c to stop)")
     while True:
@@ -49,6 +69,8 @@ def main():
                         help="keep checking the stores on a loop")
     parser.add_argument("--dry-run", action="store_true",
                         help="dont actually send to discord, just print the alerts")
+    parser.add_argument("--export", action="store_true",
+                        help="export the alerts to drops.json")
     args = parser.parse_args()
 
     if args.init:
@@ -57,6 +79,8 @@ def main():
         run_once(args.dry_run)
     elif args.watch:
         watch(args.dry_run)
+    elif args.export:
+        export_drops()
     else:
         parser.print_help()
 

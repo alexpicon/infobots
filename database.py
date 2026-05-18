@@ -58,6 +58,15 @@ def save_product(p):
     conn.close()
 
 
+def get_alerts():
+    conn = get_conn()
+    c = conn.cursor()
+    c.execute("SELECT * FROM alerts ORDER BY id DESC")
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+
 def log_alert(url, atype, message):
     conn = get_conn()
     c = conn.cursor()
