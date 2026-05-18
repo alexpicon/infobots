@@ -13,6 +13,7 @@ import discord_alert
 # note: use 127.0.0.1 not localhost, localhost was giving me empty pages
 TARGETS = [
     {"store": "Nike", "url": "http://127.0.0.1:5000/nike", "parser": "nike"},
+    {"store": "Foot Locker", "url": "http://127.0.0.1:5000/footlocker", "parser": "footlocker"},
 ]
 
 # product names with these words in them get a keyword alert

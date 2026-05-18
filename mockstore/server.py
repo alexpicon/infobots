@@ -58,6 +58,22 @@ def nike_page():
     return '<html><body>\n<div class="product-grid">' + cards + "\n</div>\n</body></html>"
 
 
+# --- Foot Locker: an old school product list ---
+
+@app.route("/footlocker")
+def footlocker_page():
+    items = ""
+    for p in STORES["footlocker"]:
+        stock = "In Stock" if p["stock"] else "Out of Stock"
+        items += '''
+  <li class="product">
+    <a class="ProductName" href="/product/{id}">{name}</a>
+    <span class="ProductPrice">${price}.00</span>
+    <span class="ProductStock">{stock}</span>
+  </li>'''.format(id=p["id"], name=p["name"], price=p["price"], stock=stock)
+    return '<html><body>\n<ul class="product-list">' + items + "\n</ul>\n</body></html>"
+
+
 # --- admin routes so i can change the stores while the bot is running ---
 
 def find_product(store, pid):

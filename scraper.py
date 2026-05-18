@@ -3,11 +3,12 @@
 # own parser in the parsers/ folder.
 
 import requests
-from parsers import nike
+from parsers import nike, footlocker
 
 # which parser to use for each store
 PARSERS = {
     "nike": nike.parse,
+    "footlocker": footlocker.parse,
 }
 
 
