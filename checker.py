@@ -20,6 +20,12 @@ def price_to_number(price):
         return 0.0
 
 
+def add_alert(alerts, url, atype, message):
+    # i was writing these same two lines every time so i pulled it out
+    alerts.append({"url": url, "type": atype, "message": message})
+    database.log_alert(url, atype, message)
+
+
 def check(products, keywords):
     alerts = []
     for p in products:
@@ -27,8 +33,7 @@ def check(products, keywords):
         if old is None:
             # never seen this product before
             msg = "New product: {} - {}".format(p["name"], p["price"])
-            alerts.append({"url": p["url"], "type": "new", "message": msg})
-            database.log_alert(p["url"], "new", msg)
+            add_alert(alerts, p["url"], "new", msg)
             p["first_seen"] = now()
             # only check keywords on new products. if i do it every run
             # it just alerts the same products over and over forever
@@ -36,21 +41,18 @@ def check(products, keywords):
             for kw in keywords:
                 if kw.lower() in name_lower:
                     msg = "Keyword match ({}): {} - {}".format(kw, p["name"], p["price"])
-                    alerts.append({"url": p["url"], "type": "keyword", "message": msg})
-                    database.log_alert(p["url"], "keyword", msg)
+                    add_alert(alerts, p["url"], "keyword", msg)
         else:
             p["first_seen"] = old["first_seen"]
             # was sold out last time, now its in stock again
             if old["in_stock"] == 0 and p["in_stock"] == 1:
                 msg = "Restock: {} is back in stock - {}".format(p["name"], p["price"])
-                alerts.append({"url": p["url"], "type": "restock", "message": msg})
-                database.log_alert(p["url"], "restock", msg)
+                add_alert(alerts, p["url"], "restock", msg)
             # price went down
             if price_to_number(p["price"]) < price_to_number(old["price"]):
                 msg = "Price drop: {} is now {} (was {})".format(
                     p["name"], p["price"], old["price"])
-                alerts.append({"url": p["url"], "type": "price", "message": msg})
-                database.log_alert(p["url"], "price", msg)
+                add_alert(alerts, p["url"], "price", msg)
         p["last_seen"] = now()
         database.save_product(p)
     return alerts
