@@ -30,6 +30,14 @@ def check(products, keywords):
             alerts.append({"url": p["url"], "type": "new", "message": msg})
             database.log_alert(p["url"], "new", msg)
             p["first_seen"] = now()
+            # only check keywords on new products. if i do it every run
+            # it just alerts the same products over and over forever
+            name_lower = p["name"].lower()
+            for kw in keywords:
+                if kw.lower() in name_lower:
+                    msg = "Keyword match ({}): {} - {}".format(kw, p["name"], p["price"])
+                    alerts.append({"url": p["url"], "type": "keyword", "message": msg})
+                    database.log_alert(p["url"], "keyword", msg)
         else:
             p["first_seen"] = old["first_seen"]
             # was sold out last time, now its in stock again
@@ -43,13 +51,6 @@ def check(products, keywords):
                     p["name"], p["price"], old["price"])
                 alerts.append({"url": p["url"], "type": "price", "message": msg})
                 database.log_alert(p["url"], "price", msg)
-        # see if the name matches any of my watch keywords
-        name_lower = p["name"].lower()
-        for kw in keywords:
-            if kw.lower() in name_lower:
-                msg = "Keyword match ({}): {} - {}".format(kw, p["name"], p["price"])
-                alerts.append({"url": p["url"], "type": "keyword", "message": msg})
-                database.log_alert(p["url"], "keyword", msg)
         p["last_seen"] = now()
         database.save_product(p)
     return alerts
