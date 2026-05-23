@@ -145,3 +145,9 @@ infobots/
 - **Discord webhooks** for alerts
 
 No frameworks beyond these. It's a 2018-era project and the stack is kept honest to that.
+
+---
+
+## License
+
+MIT. See [LICENSE](LICENSE).
